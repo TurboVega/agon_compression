@@ -155,5 +155,4 @@ int main(int argc, const char** argv) {
         printf("Cannot open %s", argv[1]);
         return -1;
     }
-    return 0;
 }
