@@ -4,6 +4,9 @@ The included binaries were compiled with gcc on Linux, but the applications can 
 other platforms (with any small changes that _might_ be necessary), or translated into other languages,
 as desired.
 
+NOTE: Compressed files have no special wrapper or header, so your Agon application must know
+that they are compressed, and treat them accordingly!
+
 ## Compress
 This application compresses the input file, yielding the output file. Worst case, the output file
 may be 25% larger than the input file. This can only happen if the input file is completely
