@@ -41,6 +41,15 @@ SOFTWARE.
 
 #define COMPRESSION_WINDOW_SIZE 256     // power of 2
 #define COMPRESSION_STRING_SIZE 16      // power of 2
+#define COMPRESSION_TYPE_TURBO  'T'     // TurboVega-style compression
+
+#pragma pack(push, 1);
+typedef struct {
+    uint8_t     marker[3];
+    uint8_t     type;
+    uint32_t    orig_size;
+} CompressionFileHeader;
+#pragma pack(pop)
 
 typedef void (*WriteCompressedByte)(void* context, uint8_t);
 
@@ -220,8 +229,20 @@ int main(int argc, const char** argv) {
     printf("Compressing %s to %s\n", argv[1], argv[2]);
     FILE* fin = fopen(argv[1], "rb");
     if (fin) {
+        fseek(fin, SEEK_END);
+        auto file_size = ftell(fin);
+        fseek(fin, SEEK_SET, 0);
+
         FILE* fout = fopen(argv[2], "wb");
         if (fout) {
+            CompressionFileHeader hdr;
+            hdr.marker[0] = 'C';
+            hdr.marker[1] = 'm';
+            hdr.marker[2] = 'p';
+            hdr.type = COMPRESSION_TYPE_TURBO;
+            hdr.orig_size = (uint32_t) file_size;
+            fwrite(&hdr, sizeof(hdr), 1, fout);
+
             CompressionData cd;
             agon_init_compression(&cd, fout, &my_write_compressed_byte);
             uint8_t input;

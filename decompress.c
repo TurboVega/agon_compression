@@ -40,6 +40,15 @@ SOFTWARE.
 
 #define COMPRESSION_WINDOW_SIZE 256     // power of 2
 #define COMPRESSION_STRING_SIZE 16      // power of 2
+#define COMPRESSION_TYPE_TURBO  'T'     // TurboVega-style compression
+
+#pragma pack(push, 1);
+typedef struct {
+    uint8_t     marker[3];
+    uint8_t     type;
+    uint32_t    orig_size;
+} CompressionFileHeader;
+#pragma pack(pop)
 
 typedef void (*WriteDecompressedByte)(void* context, uint8_t);
 
@@ -131,6 +140,21 @@ int main(int argc, const char** argv) {
     printf("Decompressing %s to %s\n", argv[1], argv[2]);
     FILE* fin = fopen(argv[1], "rb");
     if (fin) {
+        fseek(fin, SEEK_END);
+        auto file_size = ftell(fin);
+        fseek(fin, SEEK_SET, 0);
+
+        CompressionFileHeader hdr;
+        if (fread(&hdr, sizeof(hdr), 1, fin) != 1 ||
+            hdr.marker[0] != 'C' ||
+            hdr.marker[1] != 'm' ||
+            hdr.marker[2] != 'p' ||
+            hdr.type != COMPRESSION_TYPE_TURBO) {
+            fclose(fin);
+            printf("Not a Turbo-compressed file: %s", argv[2]);
+            return -4;
+        }
+
         FILE* fout = fopen(argv[2], "wb");
         if (fout) {
             DecompressionData dd;
@@ -145,6 +169,10 @@ int main(int argc, const char** argv) {
             uint32_t pct = (dd.output_count * 100) / dd.input_count;
             printf("  Decompressed %u input bytes to %u output bytes (%u%%)\n",
                     dd.input_count, dd.output_count, pct);
+            if (dd.output_count != (uint32_t) file_size) {
+                printf("Decompressed file size %u does not equal original size %u", dd.output_count, file_size);
+                return -5;
+            }
             return 0;
         } else {
             fclose(fin);
