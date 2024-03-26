@@ -4,13 +4,20 @@ The included binaries were compiled with gcc on Linux, but the applications can 
 other platforms (with any small changes that _might_ be necessary), or translated into other languages,
 as desired.
 
-NOTE: Compressed files have no special wrapper or header, so your Agon application must know
-that they are compressed, and treat them accordingly!
+Compressed files have an 8-byte header with the following structure:
+```
+typedef struct {
+    uint8_t     marker[3];  // value is "Cmp" (0x43 0x6D 0x70)
+    uint8_t     type;       // value is "T" (0x54, meaning Turbo-style compression)
+    uint32_t    orig_size;  // size of the uncompressed data
+} CompressionFileHeader;
+```
 
 ## Compress
 This application compresses the input file, yielding the output file. Worst case, the output file
 may be 25% larger than the input file. This can only happen if the input file is completely
-uncompressible (i.e., has random data not suited for compression).
+uncompressible (i.e., has random data not suited for compression). It is generally of no
+benefit to compress files that would not normally compress well.
 
 The command-line format is:
 
