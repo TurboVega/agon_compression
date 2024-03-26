@@ -43,7 +43,7 @@ SOFTWARE.
 #define COMPRESSION_STRING_SIZE 16      // power of 2
 #define COMPRESSION_TYPE_TURBO  'T'     // TurboVega-style compression
 
-#pragma pack(push, 1);
+#pragma pack(push, 1)
 typedef struct {
     uint8_t     marker[3];
     uint8_t     type;
@@ -222,16 +222,16 @@ void agon_finish_compression(CompressionData* cd) {
 
 int main(int argc, const char** argv) {
     if (argc != 3) {
-        printf("Use: compress <inputfilepath> <outputfilepath>\n");
+        printf("Use: compress <inputfilepath> <outputfilepath>\r\n");
         return -3;
     }
 
-    printf("Compressing %s to %s\n", argv[1], argv[2]);
+    printf("Compressing %s to %s\r\n", argv[1], argv[2]);
     FILE* fin = fopen(argv[1], "rb");
     if (fin) {
-        fseek(fin, SEEK_END);
-        auto file_size = ftell(fin);
-        fseek(fin, SEEK_SET, 0);
+        fseek(fin, 0, SEEK_END);
+        long orig_size = ftell(fin);
+        fseek(fin, 0, SEEK_SET);
 
         FILE* fout = fopen(argv[2], "wb");
         if (fout) {
@@ -240,7 +240,7 @@ int main(int argc, const char** argv) {
             hdr.marker[1] = 'm';
             hdr.marker[2] = 'p';
             hdr.type = COMPRESSION_TYPE_TURBO;
-            hdr.orig_size = (uint32_t) file_size;
+            hdr.orig_size = (uint32_t) orig_size;
             fwrite(&hdr, sizeof(hdr), 1, fout);
 
             CompressionData cd;
@@ -254,7 +254,7 @@ int main(int argc, const char** argv) {
             fclose(fout);
             fclose(fin);
             uint32_t pct = (cd.output_count * 100) / cd.input_count;
-            printf("  Compressed %u input bytes to %u output bytes (%u%%)\n",
+            printf("  Compressed %u input bytes to %u output bytes (%u%%)\r\n",
                     cd.input_count, cd.output_count, pct);
             return 0;
         } else {
