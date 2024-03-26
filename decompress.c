@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 // This implementation uses a window size of 256 bytes, and a code size of 10 bits.
 // The maximum compressed byte string size is 16 bytes.
@@ -69,14 +70,9 @@ void my_write_decompressed_byte(void* context, uint8_t orig_data) {
 }
 
 void agon_init_decompression(DecompressionData* dd, void* context, WriteDecompressedByte write_fcn) {
+    memset(dd, 0, sizeof(DecompressionData));
     dd->context = context;
     dd->write_fcn = write_fcn;
-    dd->window_size = 0;
-    dd->window_write_index = 0;
-    dd->input_count = 0;
-    dd->output_count = 0;
-    dd->code = 0;
-    dd->code_bits = 0;
 }
 
 void agon_decompress_byte(DecompressionData* dd, uint8_t comp_byte) {
@@ -155,6 +151,7 @@ int main(int argc, const char** argv) {
         if (fout) {
             DecompressionData dd;
             agon_init_decompression(&dd, fout, &my_write_decompressed_byte);
+            dd.input_count = sizeof(hdr);
             uint8_t input;
             while (fread(&input, 1, 1, fin) == 1) {
                 dd.input_count++;

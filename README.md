@@ -38,12 +38,18 @@ Code bits:
 11iiiiiiii   String of 16 bytes starting at window index iiiiiiii
 ```
 
+After compression, the application reports the input and output data sizes. The output
+size includes the size of the file header. 
+
 ## Decompress
 This application decompresses the input file, yielding the output file.
 
 The command-line format is:
 
 decompress <i>inputfilepath outputfilepath</i>
+
+After decompression, the application reports the input and output data sizes. The input
+size includes the size of the file header. 
 
 ## Verification
 It should be the case that compressing a file, then decompressing the

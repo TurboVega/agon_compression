@@ -24,6 +24,7 @@ SOFTWARE.
 
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 // This implementation uses a window size of 256 bytes, and a code size of 10 bits.
 // The maximum compressed byte string size is 16 bytes.
@@ -74,17 +75,9 @@ void my_write_compressed_byte(void* context, uint8_t comp_byte) {
 }
 
 void agon_init_compression(CompressionData* cd, void* context, WriteCompressedByte write_fcn) {
+    memset(cd, 0, sizeof(CompressionData));
     cd->context = context;
     cd->write_fcn = write_fcn;
-    cd->window_size = 0;
-    cd->window_write_index = 0;
-    cd->string_size = 0;
-    cd->string_read_index = 0;
-    cd->string_write_index = 0;
-    cd->input_count = 0;
-    cd->output_count = 0;
-    cd->out_byte = 0;
-    cd->out_bits = 0;
 }
 
 void agon_write_compressed_bit(CompressionData* cd, uint8_t comp_bit) {
@@ -235,6 +228,9 @@ int main(int argc, const char** argv) {
 
         FILE* fout = fopen(argv[2], "wb");
         if (fout) {
+            CompressionData cd;
+            agon_init_compression(&cd, fout, &my_write_compressed_byte);
+
             CompressionFileHeader hdr;
             hdr.marker[0] = 'C';
             hdr.marker[1] = 'm';
@@ -242,9 +238,8 @@ int main(int argc, const char** argv) {
             hdr.type = COMPRESSION_TYPE_TURBO;
             hdr.orig_size = (uint32_t) orig_size;
             fwrite(&hdr, sizeof(hdr), 1, fout);
+            cd.output_count = sizeof(hdr);
 
-            CompressionData cd;
-            agon_init_compression(&cd, fout, &my_write_compressed_byte);
             uint8_t input;
             while (fread(&input, 1, 1, fin) == 1) {
                 cd.input_count++;
