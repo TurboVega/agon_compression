@@ -8,7 +8,7 @@ Compressed files have an 8-byte header with the following structure:
 ```
 typedef struct {
     uint8_t     marker[3];  // value is "Cmp" (0x43 0x6D 0x70)
-    uint8_t     type;       // value is "T" (0x54, meaning Turbo-style compression)
+    uint8_t     type;       // value is "T" (0x54, meaning TurboVega-style compression)
     uint32_t    orig_size;  // size of the uncompressed data
 } CompressionFileHeader;
 ```
